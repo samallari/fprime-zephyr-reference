@@ -56,4 +56,8 @@ module ReferenceDeployment {
   
   instance nullPrmDb: Components.NullPrmDb base id 0x10015000
 
+  instance gpioDriver: Zephyr.ZephyrGpioDriver base id 0x10016000
+
+  instance led: Components.Led base id 0x10017000
+
 }

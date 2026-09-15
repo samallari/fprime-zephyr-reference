@@ -27,6 +27,8 @@ module ReferenceDeployment {
     instance timer
     instance comDriver
     instance nullPrmDb
+    instance gpioDriver
+    instance led
 
   # ----------------------------------------------------------------------
   # Pattern graph specifiers
@@ -91,6 +93,11 @@ module ReferenceDeployment {
       rateGroup1Hz.RateGroupMemberOut[3] -> CdhCore.tlmSend.Run
       rateGroup1Hz.RateGroupMemberOut[4] -> ComCcsds.aggregator.timeout
       rateGroup1Hz.RateGroupMemberOut[5] -> CdhCore.Subtopology.eventsRun
+    }
+
+    connections LedConnections {
+      rateGroup1Hz.RateGroupMemberOut[6] -> led.run
+      led.gpioSet -> gpioDriver.gpioWrite
     }
 
     connections ReferenceDeployment {

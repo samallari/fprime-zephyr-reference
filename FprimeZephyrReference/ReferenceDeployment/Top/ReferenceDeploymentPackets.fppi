@@ -33,6 +33,11 @@ telemetry packets ReferenceDeploymentPackets {
     CdhCore.version.LibraryVersion01
   }
 
+  packet Led id 5 group 3 {
+    led.BlinkingState
+    led.LedTransitions
+  }
+
 
 } omit {
   CdhCore.cmdDisp.CommandErrors

@@ -6,10 +6,13 @@
 // Provides access to autocoded functions
 #include <FprimeZephyrReference/ReferenceDeployment/Top/ReferenceDeploymentTopologyAc.hpp>
 // Note: Uncomment when using Svc:TlmPacketizer
-//#include <FprimeZephyrReference/ReferenceDeployment/Top/ReferenceDeploymentPacketsAc.hpp>
+// #include <FprimeZephyrReference/ReferenceDeployment/Top/ReferenceDeploymentPacketsAc.hpp>
 
 // Necessary project-specified types
+#include <zephyr/drivers/gpio.h>
 #include <Fw/Types/MallocAllocator.hpp>
+
+static const struct gpio_dt_spec led_pin = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 
 // Allows easy reference to objects in FPP/autocoder required namespaces
 using namespace ReferenceDeployment;
@@ -17,7 +20,7 @@ using namespace ReferenceDeployment;
 // Instantiate a malloc allocator for cmdSeq buffer allocation
 Fw::MallocAllocator mallocator;
 
-constexpr FwSizeType BASE_RATEGROUP_PERIOD_MS = 1; // 1Khz 
+constexpr FwSizeType BASE_RATEGROUP_PERIOD_MS = 1;  // 1Khz
 
 // Helper function to calculate the period for a given rate group frequency
 constexpr FwSizeType getRateGroupPeriod(const FwSizeType hz) {
@@ -25,12 +28,11 @@ constexpr FwSizeType getRateGroupPeriod(const FwSizeType hz) {
 }
 
 // The reference topology divides the incoming clock signal (1Hz) into sub-signals: 1Hz, 1/2Hz, and 1/4Hz with 0 offset
-Svc::RateGroupDriver::DividerSet rateGroupDivisorsSet{
-    { // Array of divider objects
-        {getRateGroupPeriod(10), 0}, // 10Hz
-        {getRateGroupPeriod(1), 0},  // 1Hz
-    }
-};
+Svc::RateGroupDriver::DividerSet rateGroupDivisorsSet{{
+    // Array of divider objects
+    {getRateGroupPeriod(10), 0},  // 10Hz
+    {getRateGroupPeriod(1), 0},   // 1Hz
+}};
 
 // Rate groups may supply a context token to each of the attached children whose purpose is set by the project. The
 // reference topology sets each token to zero as these contexts are unused in this project.
@@ -50,6 +52,7 @@ void configureTopology() {
     // Rate groups require context arrays.
     rateGroup10Hz.configure(rateGroup10HzContext, FW_NUM_ARRAY_ELEMENTS(rateGroup10HzContext));
     rateGroup1Hz.configure(rateGroup1HzContext, FW_NUM_ARRAY_ELEMENTS(rateGroup1HzContext));
+    gpioDriver.open(led_pin, Zephyr::ZephyrGpioDriver::GpioConfiguration::OUT);
 }
 
 // Public functions for use in main program are namespaced with deployment name ReferenceDeployment
@@ -71,7 +74,7 @@ void setupTopology(const TopologyState& state) {
     loadParameters();
     // Autocoded task kick-off (active components). Function provided by autocoder.
     startTasks(state);
-    
+
     // Uplink is configured for receive so a socket task is started
     comDriver.configure(state.uartDevice, state.baudRate);
 }
